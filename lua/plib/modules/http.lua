@@ -98,7 +98,7 @@ do
 					fileClass:Write( body )
 					fileClass:Close()
 
-					plib_Info( 'Download completed successfully, file was saved as: \'data/{0}\' (Took {1} seconds)', filePath, string.format( '%.4f', SysTime() - stopwatch ) )
+					plib_Info( 'Download completed successfully, file was saved as: \'data/{0}\' ({1} seconds)', filePath, string.format( '%.4f', SysTime() - stopwatch ) )
 
 					if isfunction( onSuccess ) then
 						onSuccess( body, headers, size, filePath )
