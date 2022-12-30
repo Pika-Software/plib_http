@@ -85,7 +85,7 @@ do
 		ArgAssert( filePath, 2, 'string' )
 		plib_Info( 'File \'{0}\' is downloading...', filePath )
 
-		http.Fetch(url, function( content, size, headers, code )
+		http.Fetch(url, function( content, size, responseHeaders, code )
 			if http.IsSuccess( code ) then
 				if (size == 0) then
 					plib_Warn( 'File [{0}] size is zero!', filePath )
@@ -101,7 +101,7 @@ do
 					plib_Info( 'Download completed successfully, file was saved as: \'data/{0}\' ({1} seconds)', filePath, string.format( '%.4f', SysTime() - stopwatch ) )
 
 					if isfunction( onSuccess ) then
-						onSuccess( body, headers, size, filePath )
+						onSuccess( body, responseHeaders, size, filePath )
 					end
 
 					return
@@ -112,13 +112,16 @@ do
 			end
 
 			plib_Warn( 'An error code \'{0}\' was received while downloading: \'{1}\'', code, filePath )
+			if isfunction( onFailure ) then
+				onFailure( 'Error code: ' .. code, filePath )
+			end
 		end,
 		function( err )
 			plib_Warn( 'An error occurred while trying to download \'{0}\':\n{1}', filePath, err )
 			if isfunction( onFailure ) then
 				onFailure( err, filePath )
 			end
-		end, nil, 120)
+		end, headers, 120)
 	end
 
 	file.Download = http.Download
