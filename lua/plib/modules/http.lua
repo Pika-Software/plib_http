@@ -74,6 +74,44 @@ end
 
 do
 
+	local allowedExtensions = {
+		['json'] = true,
+		['jpeg'] = true,
+		['txt'] = true,
+		['jpg'] = true,
+		['png'] = true,
+		['vtf'] = true,
+		['dat'] = true,
+		['vmt'] = true,
+		['xml'] = true,
+		['csv'] = true,
+		['mp3'] = true,
+		['wav'] = true,
+		['ogg'] = true
+	}
+
+	function string.GetFileFromURL( url, onlyAllowedExtensions, withoutExtension )
+		local str = string.lower( url )
+		local fileName = string.GetFileFromFilename( str )
+		local fileExtension = string.GetExtensionFromFilename( str )
+		fileName = string.lower( string.gsub( string.sub( fileName, 1, #fileName - (#fileExtension + 1) ), '[^%w_]+', '_' ) )
+
+		if (withoutExtension) then
+			return fileName
+		end
+
+		if onlyAllowedExtensions and not allowedExtensions[ fileExtension ] then
+			fileName = fileName .. '.' .. fileExtension
+			fileExtension = 'dat'
+		end
+
+		return fileName .. '.' .. fileExtension
+	end
+
+end
+
+do
+
 	local isfunction = isfunction
 	local plib_Warn = plib.Warn
 	local plib_Info = plib.Info
@@ -85,7 +123,7 @@ do
 		ArgAssert( filePath, 2, 'string' )
 		plib_Info( 'File \'{0}\' is downloading...', filePath )
 
-		http.Fetch(url, function( content, size, responseHeaders, code )
+		http.Fetch(url, function( binary, size, responseHeaders, code )
 			if http.IsSuccess( code ) then
 				if (size == 0) then
 					plib_Warn( 'File [{0}] size is zero!', filePath )
@@ -93,15 +131,15 @@ do
 				end
 
 				local stopwatch = SysTime()
-				local fileClass = file_Open( filePath, 'rb', 'DATA' )
+				local fileClass = file_Open( filePath, 'wb', 'DATA' )
 				if (fileClass) then
-					fileClass:Write( body )
+					fileClass:Write( binary )
 					fileClass:Close()
 
 					plib_Info( 'Download completed successfully, file was saved as: \'data/{0}\' ({1} seconds)', filePath, string.format( '%.4f', SysTime() - stopwatch ) )
 
 					if isfunction( onSuccess ) then
-						onSuccess( body, responseHeaders, size, filePath )
+						onSuccess( binary, responseHeaders, size, filePath )
 					end
 
 					return
