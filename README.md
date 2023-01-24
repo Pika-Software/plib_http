@@ -1,4 +1,4 @@
-# plib_http
+# HTTP
 Extension of the standard http library.
 
 ## Requires
